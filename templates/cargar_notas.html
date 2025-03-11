@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargar Notas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="container mt-4">
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Sistema de Notas</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">Lista de Alumnos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/cargar_notas">Cargar Notas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/agregar">Agregar Alumno</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+    <h1 class="text-center">Cargar Notas</h1>
+
+    <form method="POST" action="/cargar_notas">
+        <div class="mb-3">
+            <label class="form-label">DNI del Alumno</label>
+            <input type="text" id="dni" name="dni" class="form-control" required>
+            <button type="button" class="btn btn-primary mt-2" onclick="buscarAlumno()">Buscar</button>
+        </div>
+
+        <div id="datosAlumno" style="display: none;">
+            <h4>Datos del Alumno</h4>
+            <p><strong>Nombre:</strong> <span id="nombre"></span></p>
+            <p><strong>Domicilio:</strong> <span id="domicilio"></span></p>
+            <p><strong>Email:</strong> <span id="email"></span></p>
+            <p><strong>Foto:</strong> <br>
+                <img id="foto" src="" alt="Foto del Alumno" width="100">
+            </p>
+        </div>
+
+        <h3 class="mt-4">Notas</h3>
+        <div class="row">
+            {% for materia in materias %}
+            <div class="col-md-6">
+                <label class="form-label">{{ materia }}</label>
+                <input type="number" name="{{ materia }}" class="form-control" min="0" max="10" step="0.1" required>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3">Guardar Notas</button>
+    </form>
+
+    <script>
+        function buscarAlumno() {
+            let dni = document.getElementById('dni').value.trim(); // Elimina espacios extra
+            
+            if (dni === '') {
+                alert("Por favor, ingrese un DNI.");
+                return;
+            }
+        
+            $.ajax({
+                url: "/buscar_alumno",  // Debe coincidir con la ruta Flask
+                method: "POST",         // Usa POST porque así lo configuramos en Flask
+                data: { dni: dni },     // Envía el DNI en el cuerpo de la solicitud
+                success: function(response) {
+                    if (response.error) {
+                        alert(response.error);
+                        return;
+                    }
+                    
+                    document.getElementById('nombre').innerText = response.nombre;
+                    document.getElementById('domicilio').innerText = response.domicilio;
+                    document.getElementById('email').innerText = response.email;
+                    document.getElementById('foto').src = response.foto ? response.foto : "https://via.placeholder.com/100";
+        
+                    document.getElementById('datosAlumno').style.display = 'block';
+                },
+                error: function() {
+                    alert("Alumno no encontrado.");
+                }
+            });
+        }
+        
+    </script>
+</body>
+</html>
